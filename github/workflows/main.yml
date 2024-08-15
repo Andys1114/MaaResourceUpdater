@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main  # 触发动作的分支，可以根据需求调整
+  workflow_run:
+    workflows: ["Sync MaaResource Repository"] # 指定触发该工作流的上一个工作流名称
+    types:
+      - completed
+  workflow_dispatch:
 
 jobs:
   package_and_upload:
