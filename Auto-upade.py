@@ -2,21 +2,34 @@ import requests,json,os,zipfile,shutil
 test = 1
 find = True
 
+from requests.exceptions import HTTPError, RequestException
+
 def download_file(url):
+    # 导入requests模块和os模块
     # 获取文件名
     file_name = os.path.basename(url)
     current_directory = os.getcwd()
     file_path = os.path.join(current_directory, file_name)
 
-    # 下载文件
-    response = requests.get(url)
-    response.raise_for_status()
+    try:
+        # 下载文件
+        response = requests.get(url)
+        response.raise_for_status()  # 将引发HTTPError，如果状态不是200
 
-    # 保存文件
-    with open(file_path, "wb") as file:
-        file.write(response.content)
-
-    print(f"已下载{file_name}到当前文件夹")
+        # 保存文件
+        with open(file_path, "wb") as file:
+            file.write(response.content)
+        print(f"文件已保存到：{file_path}")
+    except HTTPError as http_err:
+        # HTTP错误处理
+        print(f"HTTP错误：{http_err}")
+    except RequestException as req_err:
+        # 其他requests相关的错误
+        print(f"请求错误：{req_err}")
+    except Exception as e:
+        # 其他未预料到的错误
+        print(f"发生未知错误：{e}")
+        
 def delete_folder(folder_name):
     if os.path.exists(folder_name):
         shutil.rmtree(folder_name)
@@ -25,8 +38,6 @@ def update():
     print("有新版本，正在下载")
     download_file(url)
     print("文件下载完成")
-    delete_folder('cache')
-    delete_folder('resource')
     print("开始覆盖")
     with zipfile.ZipFile('latest.zip', 'r') as zip_ref:
         zip_ref.extractall()
